@@ -1,4 +1,5 @@
 import torch
+import torchvision
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import torch.utils.data as data
@@ -8,7 +9,7 @@ import clip.embed as clip
 
 def get_data(device='cuda' if torch.cuda.is_available() else 'cpu',
              mode='standard', dataset='mnist', val_split=0.2, batch_size=64,
-             save_embedding=True, class_wise_embedding=True):
+             save_embedding=True, shuffle=True):
     train_dataset, test_dataset = None, None
     if dataset == 'mnist':
         # Download MNIST dataset
@@ -157,10 +158,10 @@ def get_data(device='cuda' if torch.cuda.is_available() else 'cpu',
         shuffle=True
     )
 
-    return train_loader, val_loader, test_loader
+    return train_dataset, test_dataset, train_loader, val_loader, test_loader
 
 
-def load_data(dataset='mnist', val_split=0.2, batch_size=64):
+def load_data(dataset='mnist', val_split=0.2, batch_size=64, shuffle=True):
     print(f"Files found, loading {dataset} dataset...")
     train_dataset = torch.load(f'embeddings/{dataset}_train_dataset_embedded.pt')
     test_dataset = torch.load(f'embeddings/{dataset}_test_dataset_embedded.pt')
@@ -171,7 +172,7 @@ def load_data(dataset='mnist', val_split=0.2, batch_size=64):
         shuffle=True
     )
 
-    return train_loader, val_loader, test_loader
+    return train_dataset, test_dataset, train_loader, val_loader, test_loader
 
 
 def split_train_val(dataset, val_split):
@@ -182,3 +183,15 @@ def split_train_val(dataset, val_split):
     val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=True)
 
     return train_loader, val_loader
+
+
+# TODO: This function is a very ugly way to get the labels for the datasets
+#  I should find a better way to do it and make it works for any dataset
+def get_labels(dataset):
+    if dataset == 'mnist':
+        labels = [str(i) for i in range(10)] # MNIST has 10 classes representing digits 0-9
+    elif dataset == 'cifar10':
+        labels = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
+    return labels

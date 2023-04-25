@@ -20,11 +20,10 @@ def get_image_embed(image, model, preprocess, device='cuda'):
     return image_features
 
 
-def get_text_embed(text, model, device='cuda'):
-    text_tokens = tokenizer.tokenize(text).to(device)
-    text_features = model.encode_text(text_tokens).float()
+def get_text_embed(tokenized_texts, model, device='cuda'):
+    tokenized_texts = tokenized_texts.to(device)
+    text_features = model.encode_text(tokenized_texts).float()
     return text_features
-
 
 def get_cosine_similarity(image_features, text_features):
     image_features = image_features.squeeze(0)

@@ -10,7 +10,7 @@ def main():
     check_similarity = True
 
     trainer = Trainer(mode=mode, dataset=dataset, load_embedding=True,
-                      model=model, learning_rate=1e-2, batch_size=64, num_epochs=1)
+                      model=model, learning_rate=0.1, batch_size=64, num_epochs=1)
     print("Trainer set up complete")
     print("Starting training loop...")
     trainer.train()

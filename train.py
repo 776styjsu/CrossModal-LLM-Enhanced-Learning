@@ -22,7 +22,7 @@ class Trainer:
         self.num_epochs = num_epochs
         self.val_split = val_split
 
-        self.train_loader, self.val_loader, self.test_loader,\
+        self.train_dataset, self.test_dataset, self.train_loader, self.val_loader, self.test_loader,\
             self.input_size, self.num_classes = self._get_data()
 
         self.model = None
@@ -47,17 +47,20 @@ class Trainer:
     def _get_data(self):
         if self.load_embedding and self.mode == 'clip':
             try:
-                train_loader, val_loader, test_loader = preprocess.load_data(self.dataset,
-                                                                             self.val_split, self.batch_size)
+                train_dataset, test_dataset, train_loader, \
+                    val_loader, test_loader = preprocess.load_data(self.dataset,
+                                                                   self.val_split, self.batch_size)
             except FileNotFoundError:
                 print("No embedding found. Generating new embedding...")
-                train_loader, val_loader, test_loader = get_data(self.device,
-                                                                 self.mode, self.dataset,
-                                                                 self.val_split, self.batch_size)
+                train_dataset, test_dataset, train_loader,\
+                    val_loader, test_loader = get_data(self.device,
+                                                       self.mode, self.dataset,
+                                                       self.val_split, self.batch_size)
         else:
-            train_loader, val_loader, test_loader = get_data(self.device,
-                                                             self.mode, self.dataset, self.val_split,
-                                                             self.batch_size)
+            train_dataset, test_dataset, train_loader, \
+                val_loader, test_loader = get_data(self.device,
+                                                   self.mode, self.dataset, self.val_split,
+                                                   self.batch_size)
 
         # Inspect the shape of the first example in the train_loader to get the input size
         example_input, _ = next(iter(train_loader))
@@ -67,7 +70,7 @@ class Trainer:
         _, example_label = next(iter(train_loader))
         num_classes = len(torch.unique(example_label))
 
-        return train_loader, val_loader, test_loader, input_size, num_classes
+        return train_dataset, test_dataset, train_loader, val_loader, test_loader, input_size, num_classes
 
     def train(self):
         for epoch in range(self.num_epochs):
@@ -116,21 +119,20 @@ class Trainer:
     # TODO: Save checkpoint and save accuracy for early stopping
 
     def check_similarity_and_predict(self):
-        # Check similarity between test image and each labels in the dataset
+        # Check similarity between test image and each label in the dataset
         # and predict the label with the highest similarity
         print("Checking similarity and predicting...")
-        similarity_test_loader = preprocess.load_data(self.dataset, self.val_split, self.batch_size)[2]
+        similarity_test_loader = preprocess.load_data(self.dataset, self.val_split, self.batch_size, False)[4]
         self.model.eval()
         predictions = []
-        # Get the unique labels in the dataset
-        labels = list(set(self.dataset[1]))
-        print(labels)
+        # Get the class labels
+        labels = preprocess.get_labels(self.dataset)
         # TODO: Code here has a pretty poor style. embed.py should be refactored
         #  to be more modular and reusable
         encode_model, _ = clip.embed.create_model_and_transforms()
-        label_tokens = clip.embed.tokenizer.tokenize(["This is a photo of " + label for label in labels])\
+        label_tokens = clip.embed.tokenizer.tokenize(["This is a photo of " + label for label in labels]) \
             .to(self.device)
-        label_embeddings = clip.embed.get_text_embed(encode_model, label_tokens)
+        label_embeddings = clip.embed.get_text_embed(label_tokens, encode_model)
         for batch_images, _ in similarity_test_loader:
             # Compute the similarity between the test image and each label
             batch_images = batch_images.to(self.device)
@@ -141,13 +143,13 @@ class Trainer:
             predictions.append(prediction)
         predictions = torch.cat(predictions)
         # Get the ground truth labels
-        ground_truth = torch.tensor(self.test_loader.dataset.targets)
+        ground_truth = self.test_dataset[:][1].clone().detach()
         # Compute the accuracy
         num_correct = (predictions == ground_truth).sum()
         num_samples = predictions.size(0)
         print(
             f'Got {num_correct} / {num_samples} '
-            f'with accuracy {float(num_correct)/float(num_samples)*100:.2f}%'
+            f'with accuracy {float(num_correct) / float(num_samples) * 100:.2f}%'
         )
 
     def save_model(self):
