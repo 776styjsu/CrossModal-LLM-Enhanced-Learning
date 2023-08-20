@@ -11,7 +11,9 @@ This repository provides a naive implementation of the cross-modal few-shot lear
 
 ## Key Features
 Multimodal Foundation: Utilizes models like CLIP that map different modalities to the same representation space. Like the paper, this implementation supports the embedding of three modalities: visual, textual, and audio.
+
 Cross-modal Adaptation: A simple approach that learns from the embedded examples across different modalities using shallow classifiers.
+
 Enhanced Classifier: Our experiments (though many aspects of the design should be made more rigorous and improved) showed superiority in accuracy using an image-text classifier compare to a fresh ResNet50 (image only) and a further-trained top-ranked classifier by https://www.kaggle.com/vlomme (audio only) on a curated subset of Cornell Birdcall Identification dataset. 
 
 ## Future Work
