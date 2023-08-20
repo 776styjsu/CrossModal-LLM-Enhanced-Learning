@@ -1,4 +1,7 @@
 # Cross-modal Few-shot Learning Implementation
+
+![image](https://github.com/776styjsu/CrossModal-LLM-Enhanced-Learning/assets/50536905/de538c39-48f6-4ce7-a785-8dc79e5e09a0)
+
 ## Overview
 This repository provides a naive implementation of the cross-modal few-shot learning approach presented in this paper https://arxiv.org/pdf/2301.06267.pdf. The primary goal of this paper is to improve few-shot learning. In this implementation, we demonstrated that the technique also enhances the classifier's accuracy in a non few-shot settings while harnessing the significant boost of inference speed compare to methods that don't leverage the power of pre-trained embedding models such as CLIP.
 
