@@ -1,7 +1,7 @@
 # Cross-modal Few-shot Learning Implementation
 
 <div align="center">
-    <img src="https://github.com/776styjsu/CrossModal-LLM-Enhanced-Learning/assets/50536905/c85b7838-a230-4643-9ab2-f6aa0faafddb">
+    <img src="https://github.com/776styjsu/CrossModal-LLM-Enhanced-Learning/assets/50536905/1b78477c-0804-40a7-86eb-7ea6c5eb7487">
 </div>
 
 
